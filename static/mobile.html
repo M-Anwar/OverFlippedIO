@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Bootstrap 101 Template</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/login.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.2/socket.io.js"></script>    
+  </head>
+  <body>
+    <div class="container" id="login-container">
+        <div class="card card-container">
+            <!-- <img class="profile-img-card" src="//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" alt="" /> -->
+            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
+            <p id="profile-name" class="profile-name-card"></p>
+            <form class="form-signin" id = "login-form">
+                <span id="reauth-email" class="reauth-email"></span>
+                <input type="text" id="inputUsername" class="form-control" placeholder="Name" required autofocus>
+                <input type="text" id="inputGameId" class="form-control" placeholder="Game ID" required>                
+                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Play!</button>
+            </form><!-- /form -->   
+            <p align="center"> Enable orientation lock on your phone for the best experience </p>        
+        </div><!-- /card-container -->
+    </div><!-- /container -->
+
+    <div class="container" >
+        <div class="card controller-container" id="controller-form"> 
+            <span id="error" class="reauth-email"></span>           
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <button class="btn btn-lg btn-primary btn-controls" id="disconnect">Leave</button>
+                    <button class="btn btn-lg btn-primary btn-controls" id="pause">Pause</button>
+                </div>                
+            </div>
+                        
+            <div id ="controller-div">
+                <canvas id="controller">
+                </canvas>
+            </div>
+            
+        </div><!-- /card-container -->
+    </div><!-- /container -->
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+        var LR_Tilt=0, FB_Tilt=0;
+        var canvas = document.getElementById('controller');
+        var mouseIsDown = false;
+        canvas.addEventListener("mousedown", function(){
+            mouseIsDown = true;
+        }, false);
+        canvas.addEventListener("mouseup", function(){
+            mouseIsDown = false;
+        }, false);
+       
+        canvas.addEventListener("touchstart", function(){
+            mouseIsDown = true;
+            redraw();
+        },false);
+        canvas.addEventListener("touchend", function(){
+            mouseIsDown = false;
+            redraw();
+        }, false);
+
+        function redraw(){
+            canvas.width = $("#controller-div").width();
+            canvas.height =$("#controller-div").height();
+            
+            //Draw button
+            var context = canvas.getContext('2d'); 
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;
+            var minDim = Math.min(canvas.width, canvas.height);
+            var radMult = (mouseIsDown? 0.2 : 0.15);
+            var blurRad = (mouseIsDown? 10 : 5);
+            var radius = minDim/2 - (minDim/2)*radMult;
+            
+            context.beginPath();
+            context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            context.fillStyle = 'green';
+            context.fill();
+            context.lineWidth = 5;
+            context.strokeStyle = '#003300';
+            context.shadowBlur = blurRad
+            context.shadowColor="black";        
+            context.stroke();
+
+            context.font ="30pt Arial";
+            context.fillStyle = 'white';
+            var text = "Boost";
+            var width = context.measureText(text).width;
+            var height = parseInt(context.font);           
+            context.fillText(text, centerX - width/2, centerY + height /2 - 5);     
+
+            //Draw gyro vals
+            var map = function(a){
+                return ((a + 45)/(90)) * (2*radius) - radius;
+            }
+            var gyroX =centerX + map(LR_Tilt), gyroY = centerY +map(FB_Tilt);
+
+            // document.getElementById("error").innerHTML = Math.round(LR_Tilt) + ", " 
+            //                                             + Math.round(FB_Tilt) + " -> " 
+            //                                             + Math.round(gyroX) + ", "
+            //                                             + Math.round(gyroY);  
+            
+            context.beginPath();
+            context.arc(gyroX, gyroY, 5, 0, 2 * Math.PI, false);
+            context.fillStyle = 'red';
+            context.fill();
+            context.lineWidth = 3;
+            context.strokeStyle = '#003300';
+            context.shadowBlur = 3
+            context.shadowColor="black";        
+            context.stroke();
+        }
+
+        $( window ).resize(function() {
+            redraw();
+        });
+         window.addEventListener("deviceorientation",function(){redraw();} , true);
+        
+
+        //Socket IO configurations
+        var registered = false;
+        var socket = io.connect();
+        
+        //This code is a bit convoluted but it essentially allows the same
+        //client to connect to the server after disconnection.
+        registerCallbacks(socket);
+        function registerCallbacks(socket_new){
+            socket_new.on('disconnect', function(){
+                $('#profile-name').html("Disconnected From Server");
+                showLoginForm(function(){
+                    registered = false;
+                    socket = io.connect({'forceNew':true});
+                    registerCallbacks(socket);
+                });
+            });
+            socket_new.on('connect', function(){
+                $('#profile-name').html("OverFlipped.io");
+                showLoginForm(function(){});
+            });
+        }
+
+        $(function(){
+            $(".btn-signin").on("click", function(e){
+                e.preventDefault();   
+                
+                var username = $("#login-form").find('input[id="inputUsername"]').val().trim();
+                var gameId = $("#login-form").find('input[id="inputGameId"]').val().trim();            
+                
+                if(username == "" || gameId==""){
+                    $('#reauth-email').html("Please fill in both required fields");
+                    return;
+                }
+                if(!registered){                    
+                    socket.emit('mobileConnect', { room: gameId, userName: username}, function(data){        
+                        if(data.registered == true){                    
+                            registered = true;
+                            showController(function(){
+                                redraw();
+                                init();
+                            });
+                        }else{
+                            $('#reauth-email').html(data.error);
+                        }
+                    });
+                     $('#reauth-email').html("Connecting...");
+                }       
+                else{
+                    //Shouldn't happen ideally, if so, refresh page and start over
+                    $('#reauth-email').html("Already connected ERROR!");
+                }
+
+                
+            });
+            $("#disconnect").on("click", function(e){
+                e.preventDefault();
+                socket.disconnect();
+                
+            });
+        });        
+
+        
+        function showController(cb){
+            $("#login-container").fadeOut(400, function(){
+                $("#controller-form").fadeIn(400, function(){
+                    cb();
+                });
+            });
+        }
+        function showLoginForm(cb){
+            $("#controller-form").fadeOut(400, function(){
+                $("#login-container").fadeIn(400, function(){
+                    $('#reauth-email').html("");                                     
+                    cb();
+                });
+            });
+        }
+        
+        function init() {
+		if (window.DeviceOrientationEvent) {
+			// Listen for the deviceorientation event and handle the raw data
+			window.addEventListener('deviceorientation', function(eventData) {
+				// gamma is the left-to-right tilt in degrees, where right is positive
+				var tiltLR = eventData.gamma;
+				
+				// beta is the front-to-back tilt in degrees, where front is positive
+				var tiltFB = eventData.beta;
+					
+				// alpha is the compass direction the device is facing in degrees
+				var dir = eventData.alpha
+					
+				// deviceorientation does not provide this data
+				var motUD = null;
+					
+				// call our orientation event handler
+				deviceOrientationHandler(tiltLR, tiltFB, dir, motUD);
+            }, false);
+		} else if (window.OrientationEvent) {
+			window.addEventListener('MozOrientation', function(eventData) {
+				// x is the left-to-right tilt from -1 to +1, so we need to convert to degress
+				var tiltLR = eventData.x * 90;
+					
+				// y is the front-to-back tilt from -1 to +1, so we need to convert to degress
+				// We also need to invert the value so tilting the device towards us (forward) 
+				// results in a positive value. 
+				var tiltFB = eventData.y * -90;
+					
+				// MozOrientation does not provide this data
+				var dir = null;
+					
+				// z is the vertical acceleration of the device
+				var motUD = eventData.z;
+					
+				deviceOrientationHandler(tiltLR, tiltFB, dir, motUD);
+            }, false);
+		} else {
+			document.getElementById("error").innerHTML = "Not supported on your device or browser.  Sorry."
+		}
+	}
+    function deviceOrientationHandler(tiltLR, tiltFB, dir, motionUD) {                          
+        if(registered){
+            //document.getElementById("error").innerHTML = registered + ": " + Math.round(tiltLR) + " " + Math.round(tiltFB);  
+            if(tiltFB > 45){tiltFB = 45;}
+            if(tiltFB < -45){tiltFB = -45;}
+            if(tiltLR > 45) {tiltLR = 45;}
+            if(tiltLR < -45){tiltLR = -45;}
+
+            socket.emit('mobileUpdate', { tilt_LR: Math.round(tiltLR), tilt_FB: Math.round(tiltFB), boosted: mouseIsDown});  
+            LR_Tilt = tiltLR;
+            FB_Tilt = tiltFB;         
+            redraw();       
+        }
+    }
+
+    </script>
+  </body>
+</html>

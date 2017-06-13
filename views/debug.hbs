@@ -1,0 +1,13 @@
+<h1>OverFlippedIO Debug Info</h1>
+<p> <strong> Listening on Port: </strong> {{serverSettings.port}} </p>
+{{#if serverSettings.devBuild}} 
+    <p> <strong> Environment Setting: </strong> Development Build </p>
+{{else}}
+    <p> <strong> Setting: </strong> Production Build </p>
+{{/if}}
+
+<h2> Current Rooms </h2>
+<p> {{rooms}} </p>
+
+<h2> Connections </h2>
+<p> {{connections}} </p>
