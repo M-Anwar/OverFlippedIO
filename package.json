@@ -11,6 +11,7 @@
   "author": "Muhammed Anwar",
   "license": "ISC",
   "dependencies": {
+    "entity-component-system": "^4.0.5",
     "express": "^4.15.3",
     "express-handlebars": "^3.0.0",
     "socket.io": "^2.0.2"
