@@ -87,6 +87,7 @@ io.sockets.on('connection', function(client){
     io.emit('connected', "A user has connected");
 
     client.on("newRoom", function(data){
+        logger.debug("New Room being made: " + data.room);
         rooms.push(new room(client,data.room));
     });
 
@@ -119,9 +120,20 @@ io.sockets.on('connection', function(client){
         if(typeof client.roomId !== 'undefined'){
             if(typeof rooms[client.roomId] !== 'undefined'){
                 logger.silly('message: ' + JSON.stringify(data));    
-                rooms[client.roomId].roomSocket.emit('controllerUpdate', socket.id, data);
+                rooms[client.roomId].roomSocket.emit('controllerUpdate', client.id, data);
             }
         }    
+    });
+
+    client.on('userReady', function(data){
+        if(typeof client.roomId !== 'undefined'){
+            if(typeof rooms[client.roomId] !== 'undefined'){
+                data.userName = client.userName;
+                logger.debug('message: ' + JSON.stringify(data));    
+                rooms[client.roomId].roomSocket.emit('userUpdate', client.id, data);
+                
+            }
+        }  
     });
 
     client.on('disconnect', function(){
@@ -129,15 +141,25 @@ io.sockets.on('connection', function(client){
         connections.splice(connections.indexOf(client.id),1);
         var destroyThis = null;
 
-        if(typeof client.roomId == 'undefined'){
+        if(typeof client.roomId == 'undefined'){ //Desktop sockets have no roomId assigned to them
             for(var i in rooms){
                 if(rooms[i].roomSocket.id == client.id){
-                    destroyThis = rooms[i];
+                    destroyThis = i;
                 }
             }
             if(destroyThis !== null){
-                logger.debug("Destroying Room : " + destroyThis);
-                rooms.splice(destroyThis, 1);
+                logger.debug("Destroying Room : " + rooms[destroyThis].roomId);
+                logger.debug("\tRemoving " +rooms[destroyThis].mobileSockets.length + " mobile users");
+
+                //Copy over sockets to local array, so it dosn't get interefered with on the disconnect signal
+                var removeSockets = [];
+                for(var i in rooms[destroyThis].mobileSockets){
+                    removeSockets.push(rooms[destroyThis].mobileSockets[i]);
+                }              
+                for(var i =0; i< removeSockets.length; i++){  //disconnect each socket                  
+                    removeSockets[i].disconnect();
+                }                
+                rooms.splice(destroyThis, 1); //Finally remove the room
             }
             
         }
@@ -152,7 +174,7 @@ io.sockets.on('connection', function(client){
                 logger.debug("Destroying Socket Connection " + destroyThis + " for room: " + rooms[roomId].roomId);
                 rooms[roomId].mobileSockets.splice(destroyThis, 1);               
             }
-            rooms[roomId].roomSocket.emit('userDisconnect', client.id);
+            rooms[roomId].roomSocket.emit('userDisconnect', client.id,{userName: client.userName});
         }
         
     });

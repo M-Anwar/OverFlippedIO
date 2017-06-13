@@ -8,15 +8,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.2/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-    <script src="/scripts/game.js"> </script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>    
     <link rel="stylesheet" href="css/bootstrap.css">     
   </head>
   <body>
-    <h1> Hello World </h1>
-    <div id="canvas-body">
+    <h1> Events </h1>
+    
+    <ol>
       
-    </div>
+    </ol>
     
   </body>
+  <script>
+    var socket = io.connect();
+    socket.emit('newRoom', {room:"index"});
+
+    socket.on("addUser", function(id, data){
+      $("ol").append("<li> addUser: " +id + " " + JSON.stringify(data) + "</li>");
+    });
+    socket.on("userDisconnect", function(id,data){
+      $("ol").append("<li> userDisconnect: " + id + " " + JSON.stringify(data) + "</li>");
+    });
+    socket.on("userUpdate", function(id, data){
+       $("ol").append("<li> userUpdate: "+ id + " "  + JSON.stringify(data) + "</li>");
+    });
+    socket.on("controllerUpdate", function(id, data){
+       $("ol").append("<li> controllerUpdate: "+ id + " "  + JSON.stringify(data) + "</li>");
+    });
+    
+  </script>
 </html>
