@@ -15,11 +15,11 @@ class PlayerManager{
         
         //Register socket callbacks
         this.socket.on("addUser", function(id, data){
-            logger.info("addUser: " + id + " " + JSON.stringify(data));
+            logger.debug("addUser: " + id + " " + JSON.stringify(data));
             self.addUser(id, data);
         });
         this.socket.on("userDisconnect", function(id,data){        
-            logger.info("userDisconnect: " + id + " " + JSON.stringify(data));
+            logger.debug("userDisconnect: " + id + " " + JSON.stringify(data));
             self.userDisconnect(id, data);
         });
         this.socket.on("userUpdate", function(id, data){        
@@ -27,7 +27,7 @@ class PlayerManager{
             self.userUpdate(id, data);
         });
         this.socket.on("controllerUpdate", function(id, data){        
-            logger.debug("controllerUpdate: " + id + " " + JSON.stringify(data));
+            //logger.debug("controllerUpdate: " + id + " " + JSON.stringify(data));
             self.controllerUpdate(id, data);
         });
         
@@ -39,22 +39,38 @@ class PlayerManager{
         this.controllerUpdateCallbacks = [];
 
     }
-    registerUserAddCallback(cb){this.addUserCallbacks.push(cb);}
-    registerUserDisconnectCallback(cb){this.addUserCallbacks.push(cb);}
-    registerUserUpdateCallback(cb){this.addUserCallbacks.push(cb);}    
+    registerUserAddCallback(cb){this.userAddCallbacks.push(cb);}
+    registerUserDisconnectCallback(cb){this.userDisconnectCallbacks.push(cb);}
+    registerUserUpdateCallback(cb){this.userUpdateCallbacks.push(cb);}    
 
     addUser(id, data){
-        this.players.push({id: id, userName: data.userName});
-        for(let cb of this.userAddCallbacks){cb();}
+        this.players.push({id: id, userName: data.userName, tilt_LR: 0, tilt_FB:0, boosted: false, userReady:false});
+        for(let cb of this.userAddCallbacks){cb(id, data);}                
     }
     userDisconnect(id, data){
-
+        this.players.splice(this.players.findIndex(function(element){element.id === id}), 1);
+        for(let cb of this.userDisconnectCallbacks){cb(id, data);}        
     }
     userUpdate(id, data){
-
+        var playerElement = this.getPlayer(id);
+        playerElement.userReady = !playerElement.userReady;
     }
-    controllerUpdate(id, data){
+    controllerUpdate(id, data){        
+        var playerElement = this.getPlayer(id);
+        playerElement.tilt_LR = data.tilt_LR;
+        playerElement.tilt_FB = data.tilt_FB;
+        playerElement.boosted = data.boosted;
+    }
 
+    getPlayer(id){
+        for (var i in this.players){
+            if(this.players[i].id == id){
+                return this.players[i];
+            }
+        }
+        logger.error("Invalid user requested from getPlayer(id)");
+        return null;
+        
     }
 }
 

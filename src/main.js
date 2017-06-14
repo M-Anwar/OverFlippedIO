@@ -13,6 +13,9 @@ $(function(){
     logger.setLevel(logger.INFO);
     logger.debug("Version 1.0 Overlipped.IO");
     playerManager = new PlayerManager();
+    playerManager.registerUserAddCallback(function(){
+        logger.info("User Joined Callback");
+    });
     initialize();
 });
 
