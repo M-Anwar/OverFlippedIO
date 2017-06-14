@@ -8,33 +8,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.2/socket.io.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>    
-    <link rel="stylesheet" href="css/bootstrap.css">     
+    <!--<script src="https://code.jquery.com/jquery-1.11.1.js"></script>   -->
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+    
+    <!--<link rel="stylesheet" href="css/bootstrap.css">    -->
+    <link rel="stylesheet" href="css/game.css">
+
   </head>
   <body>
-    <h1> Events </h1>
     
-    <ol>
-      
-    </ol>
-    
+    <div id ="canvas-body">
+      <div id ="lobby-interface">
+          <div class="card-deck">
+            <div class="card">
+              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
+              <div class="card-block">
+                <h4 class="card-title">Card title</h4>
+                <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              </div>
+              <div class="card-footer">
+                <small class="text-muted">Last updated 3 mins ago</small>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
+              <div class="card-block">
+                <h4 class="card-title">Card title</h4>
+                <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
+              </div>
+              <div class="card-footer">
+                <small class="text-muted">Last updated 3 mins ago</small>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
+              <div class="card-block">
+                <h4 class="card-title">Card title</h4>
+                <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This card has even longer content than the first to show that equal height action.</p>
+              </div>
+              <div class="card-footer">
+                <small class="text-muted">Last updated 3 mins ago</small>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
+              <div class="card-block">
+                <h4 class="card-title">Card title</h4>
+                <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This card has even longer content than the first to show that equal height action.</p>
+              </div>
+              <div class="card-footer">
+                <small class="text-muted">Last updated 3 mins ago</small>
+              </div>
+            </div>            
+          </div>
+          <div>
+            <h1> OverFlipped.IO </h1>
+          </div>
+      </div>
+      <div id = "pause-interace">
+      </div>
+      <div id = "disconnected-interface">
+      </div>
+    </div>
   </body>
-  <script>
-    var socket = io.connect();
-    socket.emit('newRoom', {room:"index"});
 
-    socket.on("addUser", function(id, data){
-      $("ol").append("<li> addUser: " +id + " " + JSON.stringify(data) + "</li>");
-    });
-    socket.on("userDisconnect", function(id,data){
-      $("ol").append("<li> userDisconnect: " + id + " " + JSON.stringify(data) + "</li>");
-    });
-    socket.on("userUpdate", function(id, data){
-       $("ol").append("<li> userUpdate: "+ id + " "  + JSON.stringify(data) + "</li>");
-    });
-    socket.on("controllerUpdate", function(id, data){
-       $("ol").append("<li> controllerUpdate: "+ id + " "  + JSON.stringify(data) + "</li>");
-    });
-    
-  </script>
+  <!--INCLUDE GAME SCRIPTS HERE-->
+  <script src="scripts/game.js"></script>    
 </html>
