@@ -1,12 +1,3 @@
-/**
- * Note: To use the Babylonjs node module go to the node_modules folder and find the 
- * babylonjs folder. Inside open the package.json and go to the "main" field. Replace 
- * that line with "main": "dist/preview release/babylon.max.js", and now you will be 
- * able to require it. This is a weird bug in the way the npm module is designed. Maybe
- * future versions will fix this.
- */
-
-
 var logger = require("js-logger");
 var PlayerManager = require("./PlayerManager");
 var BABYLON = require("babylonjs");
