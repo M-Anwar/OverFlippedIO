@@ -16,6 +16,7 @@ $(function(){
         logger.info("Game is ready!");
     });
     initialize();
+
 });
 
 
@@ -23,7 +24,18 @@ function initialize(){
     var canvas = document.getElementById('renderCanvas');
 
     // load the 3D engine
+    canvas.style.width = "720px";
+    canvas.style.height = "480px";
     var engine = new BABYLON.Engine(canvas, true);
+   
+    var new_size = getDesiredSize($(window).width(), $(window).height(), 16/9);
+    var width = new_size.width;
+    var height = new_size.height;  
+    canvas.style.width = width.toString() + "px";
+    canvas.style.height = height.toString() + "px";
+    engine.resize();      
+
+    console.log(canvas.style.width + ", " + canvas.style.height);
 
     // createScene function that creates and return the scene
     var createScene = function(){
@@ -58,6 +70,7 @@ function initialize(){
         ground.material.diffuseTexture.uScale = 5.0;
         ground.material.diffuseTexture.vScale = 5.0;
         ground.material.backFaceCulling = false;
+
         // return the created scene
         return scene;
     }
@@ -73,7 +86,23 @@ function initialize(){
     // the canvas/window resize event handler
     window.addEventListener('resize', function(){
         engine.resize();
+        var new_size = getDesiredSize($(window).width(), $(window).height(), 16/9);
+        var width = new_size.width;
+        var height = new_size.height;  
+        canvas.style.width = width.toString() + "px";
+        canvas.style.height = height.toString() + "px";
     });
+}
+
+function getDesiredSize(windowWidth, windowHeight, aspectRatio){
+    var newWidth = windowWidth;
+    var newHeight = (1/aspectRatio)*newWidth;
+    return {
+        width: newWidth,
+        height: newHeight
+    };
+    
+    
 }
 
 

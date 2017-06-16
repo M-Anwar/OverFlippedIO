@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "babylonjs": "^3.0.4-beta",
+    "babylonjs-inspector": "^3.0.3",
     "entity-component-system": "^4.0.5",
     "express": "^4.15.3",
     "express-handlebars": "^3.0.0",
