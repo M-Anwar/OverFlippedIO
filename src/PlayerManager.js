@@ -11,6 +11,7 @@ class PlayerManager{
         logger.debug("Connecting to server and joining room");
         this.socket = io.connect();
         this.socket.emit('newRoom', {room:"index"});
+        this.maxPlayers = 1;
         var self = this;
         
         //Register socket callbacks
@@ -37,11 +38,13 @@ class PlayerManager{
         this.userDisconnectCallbacks = [];
         this.userUpdateCallbacks = [];
         this.controllerUpdateCallbacks = [];
+        this.gameReadyCallbacks = [];
 
     }
     registerUserAddCallback(cb){this.userAddCallbacks.push(cb);}
     registerUserDisconnectCallback(cb){this.userDisconnectCallbacks.push(cb);}
-    registerUserUpdateCallback(cb){this.userUpdateCallbacks.push(cb);}    
+    registerUserUpdateCallback(cb){this.userUpdateCallbacks.push(cb);} 
+    registerGameReadyCallback(cb){this.gameReadyCallbacks.push(cb);}   
 
     addUser(id, data){
         this.players.push({id: id, userName: data.userName, tilt_LR: 0, tilt_FB:0, boosted: false, userReady:false});
@@ -54,6 +57,18 @@ class PlayerManager{
     userUpdate(id, data){
         var playerElement = this.getPlayer(id);
         playerElement.userReady = !playerElement.userReady;
+        for(let cb of this.userUpdateCallbacks){cb(id, data);}  
+        
+        var count =0;
+        for (var i in this.players){
+            if(this.players[i].userReady){
+                count++;
+            }
+        }       
+        if(count ==this.maxPlayers){
+            for(let cb of this.gameReadyCallbacks){cb();}
+        }
+
     }
     controllerUpdate(id, data){        
         var playerElement = this.getPlayer(id);
@@ -69,8 +84,10 @@ class PlayerManager{
             }
         }
         logger.error("Invalid user requested from getPlayer(id)");
-        return null;
-        
+        return null;        
+    }
+    getAllPlayers(){
+        return this.players;
     }
 }
 
