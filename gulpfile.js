@@ -20,6 +20,12 @@ var browserify = require('browserify');
 var browserSync = require('browser-sync');
 var nodemon = require('gulp-nodemon');
 
+//The global shim allows us to ignore copying BabylonJS to the 
+//final browserified game file and just include it in the index.html
+var globalShim = require('browserify-global-shim').configure({
+    'babylonjs': 'BABYLON'
+});
+
 /**
  * Using different folders/file names? Change these constants:
  */
@@ -29,6 +35,7 @@ var SOURCE_PATH = './src';
 var STATIC_PATH = './static';
 var ENTRY_FILE = SOURCE_PATH + '/main.js';
 var OUTPUT_FILE = 'game.js';
+var BABYLON_PATH = "./node_modules/babylonjs/dist/preview release/";
 
 var keepFiles = false;
 var BROWSER_SYNC_RELOAD_DELAY = 500; //Slight delay to reload browsers after nodemon restart
@@ -78,6 +85,28 @@ function copyStatic() {
 
 
 /**
+ * Copies required Babylon files from the './node_modules/babyonjs' folder into the './build/scripts' folder.
+ * This way you can call 'npm update', get the lastest Babylon version and use it on your project with ease.
+ */
+function copyBabylon() {
+
+    var srcList = ['babylon.max.js'];
+    
+    // if (!isProduction()) {
+    //     srcList.push('phaser.map', 'phaser.js');
+    // }
+    
+    srcList = srcList.map(function(file) {
+        return BABYLON_PATH + file;
+    });
+    
+    return gulp.src(srcList)
+        .pipe(gulp.dest(SCRIPTS_PATH));
+
+}
+
+
+/**
  * Transforms ES2015 code into ES5 code.
  * Optionally: Creates a sourcemap file 'game.js.map' for debugging.
  * 
@@ -94,9 +123,10 @@ function build() {
     return browserify({
         paths: [ path.join(__dirname, 'src') ],
         entries: ENTRY_FILE,
-        debug: true
-    })
-    .transform(babelify)
+        debug: true,
+        
+    })    
+    .transform(babelify, globalShim)
     .bundle().on('error', function(error){
           gutil.log(gutil.colors.red('[Build Error]', error.message));
           this.emit('end');
@@ -162,7 +192,8 @@ function serve() {
 
 gulp.task('cleanBuild', cleanBuild);
 gulp.task('copyStatic', ['cleanBuild'], copyStatic);
-gulp.task('build', ['copyStatic'], build);
+gulp.task('copyBabylon', ['copyStatic'], copyBabylon);
+gulp.task('build', ['copyBabylon'], build);
 gulp.task('fastBuild', build);
 gulp.task('webserver', ['build'], webserver);
 gulp.task('serve', ['webserver'], serve);

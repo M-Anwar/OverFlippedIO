@@ -5,6 +5,9 @@ var BABYLON = require("babylonjs");
 //Player connection information
 var playerManager;
 
+var engine, canvas;
+
+var sphere, sphere1;
 
 //Entry point 
 $(function(){
@@ -15,27 +18,19 @@ $(function(){
     playerManager.registerGameReadyCallback(function(){
         logger.info("Game is ready!");
     });
-    initialize();
+    initialize();   
 
 });
 
 
 function initialize(){
-    var canvas = document.getElementById('renderCanvas');
+    canvas = document.getElementById('renderCanvas');
 
     // load the 3D engine
-    canvas.style.width = "720px";
-    canvas.style.height = "480px";
-    var engine = new BABYLON.Engine(canvas, true);
-   
-    var new_size = getDesiredSize($(window).width(), $(window).height(), 16/9);
-    var width = new_size.width;
-    var height = new_size.height;  
-    canvas.style.width = width.toString() + "px";
-    canvas.style.height = height.toString() + "px";
-    engine.resize();      
-
-    console.log(canvas.style.width + ", " + canvas.style.height);
+    canvas.style.width = "1920px";
+    canvas.style.height = "1080px";
+    engine = new BABYLON.Engine(canvas, true);
+    resizeCanvas();
 
     // createScene function that creates and return the scene
     var createScene = function(){
@@ -55,13 +50,20 @@ function initialize(){
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
 
         // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-        var sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
+        sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
         sphere.material = new BABYLON.StandardMaterial("texture1", scene);
-        sphere.material.diffuseColor = new BABYLON.Color3(1.0,0.8,0.7);
+        sphere.material.emissiveColor = new BABYLON.Color3(0.2,0.3,0.4);
+        sphere.material.diffuseColor = new BABYLON.Color3(0.1,0.4,0.8);
+
+        sphere1 = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
+        sphere1.material = new BABYLON.StandardMaterial("texture1", scene);
+        sphere1.material.diffuseColor = new BABYLON.Color3(1.0,0.8,0.7);
         
 
         // move the sphere upward 1/2 of its height
         sphere.position.y = 1;
+        sphere1.position.y = 1
+        sphere1.position.x = -5;
 
         // create a built-in "ground" shape; its constructor takes the same 5 params as the sphere's one
         var ground = BABYLON.Mesh.CreateGround('ground1', 100, 100, 4, scene);
@@ -80,18 +82,33 @@ function initialize(){
 
     // run the render loop
     engine.runRenderLoop(function(){
+        var players = playerManager.getAllPlayers();
+        if(players.length > 0){            
+            sphere.position.x += players[0].tilt_LR/100;
+            sphere.position.z += players[0].tilt_FB/100;
+        }
+        if(players.length > 1){            
+            sphere1.position.x += players[1].tilt_LR/100;
+            sphere1.position.z += players[1].tilt_FB/100;
+        }
+
+
         scene.render();
     });
 
     // the canvas/window resize event handler
     window.addEventListener('resize', function(){
-        engine.resize();
-        var new_size = getDesiredSize($(window).width(), $(window).height(), 16/9);
-        var width = new_size.width;
-        var height = new_size.height;  
-        canvas.style.width = width.toString() + "px";
-        canvas.style.height = height.toString() + "px";
+        resizeCanvas();       
     });
+}
+
+function resizeCanvas(){
+    var new_size = getDesiredSize($(window).width(), $(window).height(), 16/9);
+    var width = new_size.width;
+    var height = new_size.height;  
+    canvas.style.width = width.toString() + "px";
+    canvas.style.height = height.toString() + "px";
+    engine.resize();
 }
 
 function getDesiredSize(windowWidth, windowHeight, aspectRatio){
