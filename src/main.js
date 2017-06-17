@@ -19,7 +19,7 @@ $(function(){
         logger.info("Game is ready!");
     });
     initialize();   
-
+    console.log("Dummy Change");
 });
 
 
