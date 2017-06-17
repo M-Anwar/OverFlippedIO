@@ -104,6 +104,16 @@ io.sockets.on('connection', function(client){
                 logger.warn("Rejecting user ... room already has " + webserverSettings.maxPlayers + " players");
                 fn({registered: false, error: "The requested game is full"});
             }else{
+                //Make sure that the username doesn't already exist on the room
+                for(var users in rooms[desktopRoom].mobileSockets){
+                   
+                    if(rooms[desktopRoom].mobileSockets[users].userName == data.userName){
+                        logger.warn("Rejecting user ... user already exists: " + data.userName);
+                        fn({registered: false, error: "User already exists in the game"});
+                        return;
+                    }
+                }
+
                 rooms[desktopRoom].mobileSockets.push(client);
                 client.roomId = desktopRoom;
                 client.userName = data.userName;

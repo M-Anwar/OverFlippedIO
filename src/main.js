@@ -5,7 +5,7 @@ var BABYLON = require("babylonjs");
 //Player connection information
 var playerManager;
 
-var engine, canvas;
+var engine, canvas, camera;
 
 var sphere, sphere1;
 
@@ -15,11 +15,11 @@ $(function(){
     logger.setLevel(logger.INFO);
     logger.info("Version 1.0 Overlipped.IO");
     playerManager = new PlayerManager();
-    playerManager.registerGameReadyCallback(function(){
-        logger.info("Game is ready!");
+    playerManager.registerGameStateChangeCallback(function(state){
+        logger.info("Game is in: " + state + " state");
     });
-    initialize();   
-    console.log("Dummy Change");
+    initialize();       
+    
 });
 
 
@@ -38,12 +38,12 @@ function initialize(){
         var scene = new BABYLON.Scene(engine);
 
         // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
-        var camera = new BABYLON.ArcRotateCamera('camera2', 1,0.8, 10, new BABYLON.Vector3(0, 0,0), scene);
-
+        camera = new BABYLON.ArcRotateCamera('camera2', -Math.PI/2,Math.PI/5, 100, new BABYLON.Vector3(0, 0,-14), scene);
+        
         // target the camera to scene origin
-        camera.setTarget(BABYLON.Vector3.Zero());
+        //camera.setTarget(BABYLON.Vector3.Zero());
 
-        // attach the camera to the canvas
+        // attach the camera to the canvas        
         camera.attachControl(canvas, false);
 
         // create a basic light, aiming 0,1,0 - meaning, to the sky
@@ -73,6 +73,35 @@ function initialize(){
         ground.material.diffuseTexture.vScale = 5.0;
         ground.material.backFaceCulling = false;
 
+   var canvas2D = new BABYLON.ScreenSpaceCanvas2D(scene, 
+    { 
+        id: "ScreenCanvas", size: new BABYLON.Size(200, 200), 
+        backgroundFill: "#C0C0C040", backgroundRoundRadius: 50,
+        x:1920/2, y:1080/2 
+    });
+    
+    var rect = new BABYLON.Rectangle2D({
+        id: "mainRect", parent: canvas2D, x: 50, y: 50, width: 100, height: 100, 
+        fill: "#404080FF", border: "#A040A0D0, #FFFFFFFF", borderThickness: 10, 
+        roundRadius: 10, 
+        children: 
+        [
+            new BABYLON.Rectangle2D(
+            { 
+                id: "insideRect", marginAlignment: "v: center, h: center", 
+                width: 40, height: 40, fill: "#FAFF75FF", roundRadius: 10 
+            })
+        ]});
+
+    var timerId = setInterval(function () {
+        if (rect.isDisposed) {
+            clearInterval(timerId);
+            return;
+        }
+        rect.rotation += 0.003;
+    }, 10);
+
+
         // return the created scene
         return scene;
     }
@@ -83,16 +112,17 @@ function initialize(){
     // run the render loop
     engine.runRenderLoop(function(){
         var players = playerManager.getAllPlayers();
-        if(players.length > 0){            
-            sphere.position.x += players[0].tilt_LR/100;
-            sphere.position.z += players[0].tilt_FB/100;
+        if(playerManager.getPlayerCount()>0){  
+            var player= playerManager.getPlayer(0);                   
+            sphere.position.x += player.tilt_LR/100;
+            sphere.position.z += -player.tilt_FB/100;
         }
-        if(players.length > 1){            
-            sphere1.position.x += players[1].tilt_LR/100;
-            sphere1.position.z += players[1].tilt_FB/100;
+        if(playerManager.getPlayerCount()>1){   
+            var player= playerManager.getPlayer(1);             
+            sphere1.position.x += player.tilt_LR/100;
+            sphere1.position.z += -player.tilt_FB/100;
         }
-
-
+     
         scene.render();
     });
 
@@ -108,12 +138,18 @@ function resizeCanvas(){
     var height = new_size.height;  
     canvas.style.width = width.toString() + "px";
     canvas.style.height = height.toString() + "px";
-    engine.resize();
+    //engine.resize();
 }
 
 function getDesiredSize(windowWidth, windowHeight, aspectRatio){
     var newWidth = windowWidth;
     var newHeight = (1/aspectRatio)*newWidth;
+
+    if(newHeight > windowHeight){
+        newHeight = windowHeight;
+        newWidth = aspectRatio * newHeight;
+    }
+
     return {
         width: newWidth,
         height: newHeight
