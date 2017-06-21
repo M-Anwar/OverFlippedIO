@@ -162,6 +162,11 @@
                     $('#reauth-email').html("Please fill in both required fields");
                     return;
                 }
+                if(username.length > 15){
+                    $('#reauth-email').html("Username should be smaller than 15 characters");
+                    return;
+                }
+
                 if(!registered){                    
                     socket.emit('mobileConnect', { room: gameId, userName: username}, function(data){        
                         if(data.registered == true){                    

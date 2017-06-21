@@ -35,3 +35,10 @@ html, body {
     height  : 100%;
     touch-action: none;
 }
+
+#uiDiv{
+  width:100%;
+  height:100%;
+  touch-action:none;
+  pointer-events: none;
+}

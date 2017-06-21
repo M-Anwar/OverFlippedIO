@@ -12,7 +12,7 @@
     <!--<script src="https://code.jquery.com/jquery-1.11.1.js"></script>   -->
     
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 
@@ -22,60 +22,25 @@
 
   </head>
   <body id ="body">
-    <canvas id="renderCanvas"> </canvas>
-    <!--<div id ="canvas-body">
-      <div id ="lobby-interface">
-          <div class="card-deck">
-            <div class="card">
-              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
-              <div class="card-block">
-                <h4 class="card-title">Card title</h4>                
-              </div>
-              <div class="card-footer text-center">
-                <button class="btn btn-danger "> Not ready </button>
-              </div>
-            </div>
-            <div class="card">
-              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
-              <div class="card-block">
-                <h4 class="card-title">Card title</h4>                
-              </div>
-              <div class="card-footer text-center">               
-                <button class="btn btn-danger "> Not ready </button>
-              </div>
-            </div>
-            <div class="card">
-              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
-              <div class="card-block">
-                <h4 class="card-title">Card title</h4>
-                
-              </div>
-              <div class="card-footer text-center">
-                <button class="btn btn-danger "> Not ready </button>
-              </div>
-            </div>
-            <div class="card">
-              <img class="card-img-top" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" alt="Card image cap">
-              <div class="card-block">
-                <h4 class="card-title">Card title</h4>
-                
-              </div>
-              <div class="card-footer text-center">
-                <button class="btn btn-danger "> Not ready </button>
-              </div>
-            </div>            
-          </div>
-          <div>
-            <h1> OverFlipped.IO </h1>
-          </div>
-      </div>
-      <div id = "pause-interace">
-      </div>
-      <div id = "disconnected-interface">
-      </div>
-    </div>-->
+    <canvas id="renderCanvas"> </canvas>        
+    <div id="uiDiv"></div>
   </body>
 
+  <script>
+    //Get the IP Address of the server to show to the mobile users so they 
+    //can connect as controllers
+      
+
+
+    $.ajax({
+        type: "GET",
+        url: "localhost:3000/address",
+        success: function(data){
+          console.log(data);
+          window.gameAddress = data.address + ":" + data.port;
+        }
+    });
+  </script>
   <!--INCLUDE GAME SCRIPTS HERE-->  
   
   <script src="js/hand.min.js"></script>  

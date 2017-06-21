@@ -5,6 +5,7 @@ var socket = require('socket.io');
 var exphbs = require('express-handlebars');
 var morgan = require('morgan');
 var winston = require('winston');
+var ip = require('ip');
 require('winston-daily-rotate-file');
 
 
@@ -66,6 +67,9 @@ app.get('/debug', function(req,res){
 })
 app.get('/', function(req, res){
     res.render('index');
+});
+app.get('/address', function(req,res){
+    res.json({address: ip.address(), port: webserverSettings.port});
 });
 
 

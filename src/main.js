@@ -1,13 +1,14 @@
 var logger = require("js-logger");
 var PlayerManager = require("./PlayerManager");
 var BABYLON = require("babylonjs");
+var Konva = require("konva");
+var LobbyState = require('./LobbyState');
 
 //Player connection information
 var playerManager;
+var engine, canvas, uiCanvas;
 
-var engine, canvas, camera;
-
-var sphere, sphere1;
+var lobbyState;
 
 //Entry point 
 $(function(){
@@ -18,6 +19,7 @@ $(function(){
     playerManager.registerGameStateChangeCallback(function(state){
         logger.info("Game is in: " + state + " state");
     });
+   
     initialize();       
     
 });
@@ -26,104 +28,40 @@ $(function(){
 function initialize(){
     canvas = document.getElementById('renderCanvas');
 
+    var width = 1920;
+    var height = 1080;
+
     // load the 3D engine
-    canvas.style.width = "1920px";
-    canvas.style.height = "1080px";
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";   
     engine = new BABYLON.Engine(canvas, true);
-    resizeCanvas();
+    engine.canvasWidth = width;
+    engine.canvasHeight = height;
+    engine.playerManager = playerManager;
 
-    // createScene function that creates and return the scene
-    var createScene = function(){
-        // create a basic BJS Scene object
-        var scene = new BABYLON.Scene(engine);
-
-        // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
-        camera = new BABYLON.ArcRotateCamera('camera2', -Math.PI/2,Math.PI/5, 100, new BABYLON.Vector3(0, 0,-14), scene);
-        
-        // target the camera to scene origin
-        //camera.setTarget(BABYLON.Vector3.Zero());
-
-        // attach the camera to the canvas        
-        camera.attachControl(canvas, false);
-
-        // create a basic light, aiming 0,1,0 - meaning, to the sky
-        var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
-
-        // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-        sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
-        sphere.material = new BABYLON.StandardMaterial("texture1", scene);
-        sphere.material.emissiveColor = new BABYLON.Color3(0.2,0.3,0.4);
-        sphere.material.diffuseColor = new BABYLON.Color3(0.1,0.4,0.8);
-
-        sphere1 = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
-        sphere1.material = new BABYLON.StandardMaterial("texture1", scene);
-        sphere1.material.diffuseColor = new BABYLON.Color3(1.0,0.8,0.7);
-        
-
-        // move the sphere upward 1/2 of its height
-        sphere.position.y = 1;
-        sphere1.position.y = 1
-        sphere1.position.x = -5;
-
-        // create a built-in "ground" shape; its constructor takes the same 5 params as the sphere's one
-        var ground = BABYLON.Mesh.CreateGround('ground1', 100, 100, 4, scene);
-        ground.material = new BABYLON.StandardMaterial("texture2", scene)
-        ground.material.diffuseTexture = new BABYLON.Texture("img/grass.jpg")
-        ground.material.diffuseTexture.uScale = 5.0;
-        ground.material.diffuseTexture.vScale = 5.0;
-        ground.material.backFaceCulling = false;
-
-   var canvas2D = new BABYLON.ScreenSpaceCanvas2D(scene, 
-    { 
-        id: "ScreenCanvas", size: new BABYLON.Size(200, 200), 
-        backgroundFill: "#C0C0C040", backgroundRoundRadius: 50,
-        x:1920/2, y:1080/2 
+    //Load 2D Ui Elements
+    var uiStage = new Konva.Stage({
+        container: 'uiDiv',
+        width: width,
+        height: height
     });
     
-    var rect = new BABYLON.Rectangle2D({
-        id: "mainRect", parent: canvas2D, x: 50, y: 50, width: 100, height: 100, 
-        fill: "#404080FF", border: "#A040A0D0, #FFFFFFFF", borderThickness: 10, 
-        roundRadius: 10, 
-        children: 
-        [
-            new BABYLON.Rectangle2D(
-            { 
-                id: "insideRect", marginAlignment: "v: center, h: center", 
-                width: 40, height: 40, fill: "#FAFF75FF", roundRadius: 10 
-            })
-        ]});
-
-    var timerId = setInterval(function () {
-        if (rect.isDisposed) {
-            clearInterval(timerId);
-            return;
-        }
-        rect.rotation += 0.003;
-    }, 10);
+    // create a layer
+    var layer = new Konva.Layer(); 
+    uiStage.add(layer);
+    uiCanvas = $(".konvajs-content").find("canvas")[0]; 
+    engine.uiLayer = layer;
 
 
-        // return the created scene
-        return scene;
-    }
+    resizeCanvas();
+    lobbyState = new LobbyState(engine, canvas);
 
-    // call the createScene function
-    var scene = createScene();
 
     // run the render loop
     engine.runRenderLoop(function(){
-        var players = playerManager.getAllPlayers();
-        if(playerManager.getPlayerCount()>0){  
-            var player= playerManager.getPlayer(0);                   
-            sphere.position.x += player.tilt_LR/100;
-            sphere.position.z += -player.tilt_FB/100;
-        }
-        if(playerManager.getPlayerCount()>1){   
-            var player= playerManager.getPlayer(1);             
-            sphere1.position.x += player.tilt_LR/100;
-            sphere1.position.z += -player.tilt_FB/100;
-        }
-     
-        scene.render();
+        lobbyState.update(10);
+        lobbyState.render();
+        
     });
 
     // the canvas/window resize event handler
@@ -137,7 +75,10 @@ function resizeCanvas(){
     var width = new_size.width;
     var height = new_size.height;  
     canvas.style.width = width.toString() + "px";
-    canvas.style.height = height.toString() + "px";
+    canvas.style.height = height.toString() + "px"; 
+    $(".konvajs-content").attr('style','');
+    $(uiCanvas).attr('style','');
+    $(uiCanvas).css({width: width.toString() + "px", height: height.toString()+ "px"});
     //engine.resize();
 }
 
