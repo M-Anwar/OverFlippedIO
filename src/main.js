@@ -1,7 +1,6 @@
 var logger = require("js-logger");
 var PlayerManager = require("./PlayerManager");
 var BABYLON = require("babylonjs");
-var Konva = require("konva");
 var LobbyState = require('./LobbyState');
 
 //Player connection information
@@ -39,20 +38,6 @@ function initialize(){
     engine.canvasHeight = height;
     engine.playerManager = playerManager;
 
-    //Load 2D Ui Elements
-    var uiStage = new Konva.Stage({
-        container: 'uiDiv',
-        width: width,
-        height: height
-    });
-    
-    // create a layer
-    var layer = new Konva.Layer(); 
-    uiStage.add(layer);
-    uiCanvas = $(".konvajs-content").find("canvas")[0]; 
-    engine.uiLayer = layer;
-
-
     resizeCanvas();
     lobbyState = new LobbyState(engine, canvas);
 
@@ -75,10 +60,7 @@ function resizeCanvas(){
     var width = new_size.width;
     var height = new_size.height;  
     canvas.style.width = width.toString() + "px";
-    canvas.style.height = height.toString() + "px"; 
-    $(".konvajs-content").attr('style','');
-    $(uiCanvas).attr('style','');
-    $(uiCanvas).css({width: width.toString() + "px", height: height.toString()+ "px"});
+    canvas.style.height = height.toString() + "px";     
     //engine.resize();
 }
 

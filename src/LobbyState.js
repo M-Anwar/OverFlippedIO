@@ -4,7 +4,6 @@
 
 var GameState = require("./GameState");
 var BABYLON = require("babylonjs");
-var Konva = require('konva');
 
 class LobbyState extends GameState{
 
@@ -55,77 +54,7 @@ class LobbyState extends GameState{
         ground.material.diffuseTexture.uScale = 5.0;
         ground.material.diffuseTexture.vScale = 5.0;
         ground.material.backFaceCulling = false;
-
-        // create our shape
-        var outerRect = new Konva.Rect({
-            x: this.engine.canvasWidth / 2,
-            y: this.engine.canvasHeight / 2,
-            stroke: '#555',
-            strokeWidth: 5,
-            fill: '#FFFFFF',
-            opacity: 0.5,
-            width: this.engine.canvasWidth*0.9,  
-            height:this.engine.canvasHeight*0.9,         
-            shadowColor: 'black',
-            shadowBlur: 10,
-            shadowOffset: [10, 10],
-            shadowOpacity: 0.2,
-            cornerRadius: 10
-        });
-        outerRect.setOffset({
-            x: outerRect.getWidth() / 2,
-            y: outerRect.getHeight()/2
-        });
-
-
-        var title = new Konva.Text({
-            x: this.engine.canvasWidth / 2,
-            y: 60,
-            text: 'OverFlipped.IO',
-            fontSize: 150,
-            fontFamily: 'Impact',
-            fill: 'black',
-            opacity:0
-        });
-        title.setOffset({
-            x: title.getWidth() / 2
-        });
-
-        var playerCards = new Konva.Group({
-            x: this.engine.canvasWidth/2 - outerRect.getWidth()/2 + 50,
-            y: this.engine.canvasHeight/2 - outerRect.getHeight()/2 + 250
-        }); 
-
-        var colors = ['red', 'orange', 'yellow'];
-        for(var i = 0; i < 3; i++) {
-            var box = new Konva.Rect({
-                x: i * 30,
-                y: i * 18,
-                width: 100,
-                height: 50,
-                name: colors[i],
-                fill: colors[i],
-                stroke: 'black',
-                strokeWidth: 4
-            });
-            playerCards.add(box);
-        }
-        
-        // add the shape to the layer
-        this.engine.uiLayer.add(outerRect);
-        this.engine.uiLayer.add(title); 
-        this.engine.uiLayer.add(playerCards);
-        this.engine.uiLayer.batchDraw();       
        
-        //Initial Animations
-        var tween = new Konva.Tween({
-            node: title,
-            duration: 5,
-            opacity: 1
-        });
-        setTimeout(function() {
-            tween.play();
-        }, 500);
 
         // return the created scene
         return scene;
