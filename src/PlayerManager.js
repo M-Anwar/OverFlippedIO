@@ -11,7 +11,7 @@ class PlayerManager{
         logger.debug("Connecting to server and joining room");
         this.socket = io.connect();
         this.socket.emit('newRoom', {room:"game_test"});
-        this.maxPlayers = 4;
+        this.maxPlayers = 1;
 
         this.gameState = {
             LOBBY: "Lobby",
@@ -76,9 +76,10 @@ class PlayerManager{
             this._addToHistory(name, playerIdx);   
         }
        
+        for(let cb of this.userDisconnectCallbacks){cb(id, data);}  
         this.players[playerIdx] = null;
         
-        for(let cb of this.userDisconnectCallbacks){cb(id, data);}        
+              
     }
     userUpdate(id, data){        
         var playerElement = this.getPlayerById(id);      
@@ -90,7 +91,8 @@ class PlayerManager{
             if(this.players[i]!=null && this.players[i].userReady){
                 count++;
             }
-        }       
+        }    
+
         if(count ==this.maxPlayers){
             this.currentGameState = this.gameState.GAME;
             for(let cb of this.gameStateChangeCallbacks){cb(this.currentGameState);}
@@ -101,8 +103,7 @@ class PlayerManager{
         var playerElement = this.getPlayerById(id);
         playerElement.tilt_LR = data.tilt_LR;
         playerElement.tilt_FB = data.tilt_FB;
-        playerElement.boosted = data.boosted;
-        this.get
+        playerElement.boosted = data.boosted;        
     }
 
     /**
