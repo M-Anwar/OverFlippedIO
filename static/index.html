@@ -28,7 +28,8 @@
     <div id = "UI">
       <div id="lobby">
         <div class="title animated slideInDown">
-          <h1> OverFlipped.IO</h1>    
+          <!--<h1> OverFlipped.IO</h1>    -->
+          <img class="logoImage" src="img/logo1.png"></img>
         </div>
         <div id="Menu" class="animated fadeInUp" >
           <div id="player0" class ="playerCard notJoined">
@@ -63,7 +64,10 @@
         </div>
         
       </div>
-      
+      <div id ="game">
+        <p id="debug"> </p>
+      </div>
+
     </div> 
   </body>
 
@@ -96,6 +100,7 @@
   <!--INCLUDE GAME SCRIPTS HERE-->  
   
   <script src="js/hand.min.js"></script>  
+  <script src="js/cannon.min.js"></script>    
   <script src="scripts/babylon.max.js"></script>
   <script src="js/babylon.canvas2d.min.js"></script>
   <script src="scripts/game.js"></script>    

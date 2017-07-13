@@ -60,8 +60,9 @@ class PlayerManager{
     }
 
     addUser(id, data){
-        this._addNewPlayer({id: id, userName: data.userName, tilt_LR: 0, tilt_FB:0, boosted: false, userReady:false})        
-        for(let cb of this.userAddCallbacks){cb(id, data);}                
+        this._addNewPlayer({id: id, userName: data.userName, tilt_LR: 0, tilt_FB:0, boosted: false, userReady:false})           
+        for(let cb of this.userAddCallbacks){cb(id, data);}     
+                   
     }
     userDisconnect(id, data){
         var playerIdx = this.getPlayerIndex(id);
@@ -120,7 +121,7 @@ class PlayerManager{
                 return this.players[i];
             }
         }
-        logger.error("Invalid user requested from getPlayer(id)");
+        logger.error("Invalid user requested from getPlayer(index)");
         return null;  
     }
     getPlayerIndex(id){

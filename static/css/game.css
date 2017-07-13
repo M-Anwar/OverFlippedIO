@@ -37,6 +37,14 @@ html, body {
 
 
 }
+
+#game{
+  width:100%;
+  display:block;
+  color:black;
+}
+
+
 #lobby{   
   width:100%; 
   display:none;
@@ -46,11 +54,17 @@ html, body {
   width:100%;
   height:100%;
   margin:auto;
-  margin-top:2vh;
+  margin-top:1vw;
   touch-action:none;
   pointer-events: none;
   text-align: center;  
   
+}
+
+.logoImage{
+  display:block;
+  width:50%;
+  margin:auto;
 }
 .playerCard{
   display: inline-block;
@@ -58,9 +72,9 @@ html, body {
   text-align: center;
   
   opacity: 0.96;
-  border-radius: 2vh; 
+  border-radius: 2vw; 
   padding: 1vh;
-  box-shadow: 0.5vh 1vh rgb(20,20,20);
+  box-shadow: 0.5vh 1vw rgb(20,20,20);
   border-style: solid;
 }
 .playerCard p{

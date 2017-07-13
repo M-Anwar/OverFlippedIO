@@ -3,12 +3,16 @@ var PlayerManager = require("./PlayerManager");
 var BABYLON = require("babylonjs");
 var LobbyState = require('./LobbyState');
 var MainState = require('./MainState');
+var UIManager = require('./UIManager');
 
 //Player connection information
 var playerManager;
-var engine, canvas, uiCanvas;
+var engine, canvas;
 
 var states ={};
+var uiManager;
+
+var debugMode = false;
 
 //Entry point 
 $(function(){
@@ -26,7 +30,7 @@ function initialize(){
     UI = document.getElementById('UI')
 
     var width = 1920;
-    var height = 1080;
+    var height =1080;
 
     // load the 3D engine
     canvas.style.width = width + "px";
@@ -37,12 +41,21 @@ function initialize(){
     engine.canvasWidth = width;
     engine.canvasHeight = height;
     engine.playerManager = playerManager;
-    engine.currentState = "lobby";
+    engine.debugMode = debugMode;
+    if(debugMode){
+        engine.currentState = "main";
+    }
+    else{
+        engine.currentState = "lobby";
+    }
+    
     resizeCanvas();
 
 
     states["lobby"] = new LobbyState("lobby", engine, canvas);
     states["main"] = new MainState("main", engine, canvas);
+
+    uiManager = new UIManager(engine);
     
     
 
