@@ -11,7 +11,7 @@ class PlayerManager{
         logger.debug("Connecting to server and joining room");
         this.socket = io.connect();
         this.socket.emit('newRoom', {room:"game_test"});
-        this.maxPlayers = 1;
+        this.maxPlayers = 2;
 
         this.gameState = {
             LOBBY: "Lobby",

@@ -1,7 +1,8 @@
-function positionLogger(entity, elapsed){    
-    var position = entities.getComponent(entity, "position");
-    position.x ++;
-    console.log(position);
+function positionLogger(test){    
+    return 10;
+}
+function someOtherFunction(test){
+    return 11;
 }
 
 module.exports = positionLogger;
