@@ -72,6 +72,7 @@ class UIManager{
             
         });
         playerManager.registerGameStateChangeCallback(function(gameState){
+            console.log("Player Disconnected");
             clearInterval(startInterval);
             if(gameState == playerManager.gameState.GAME){
                 var count = 5;

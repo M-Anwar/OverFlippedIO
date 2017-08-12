@@ -1,8 +1,8 @@
 var logger = require("js-logger");
 var PlayerManager = require("./PlayerManager");
 var BABYLON = require("babylonjs");
-var LobbyState = require('./LobbyState');
-var MainState = require('./MainState');
+var LobbyState = require('./GameStates/LobbyState');
+var MainState = require('./GameStates/MainState');
 var UIManager = require('./UIManager');
 
 //Player connection information
@@ -12,7 +12,7 @@ var engine, canvas;
 var states ={};
 var uiManager;
 
-var debugMode = false;
+var debugMode = true;
 
 //Entry point 
 $(function(){
@@ -29,8 +29,8 @@ function initialize(){
     canvas = document.getElementById('renderCanvas');
     UI = document.getElementById('UI')
 
-    var width = 1920;
-    var height =1080;
+    var width = 1280;
+    var height =720;
 
     // load the 3D engine
     canvas.style.width = width + "px";
