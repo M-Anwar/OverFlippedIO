@@ -72,8 +72,7 @@
   </body>
 
   <script>
-    //Get the IP Address of the server to show to the mobile users so they 
-    //can connect as controllers
+    
     $.fn.extend({
         animateCss: function (animationName, cb) {
             var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
@@ -87,7 +86,8 @@
         }
     });
 
-
+    //Get the IP Address of the server to show to the mobile users so they 
+    //can connect as controllers
     $.ajax({
         type: "GET",
         url: "localhost:3000/address",

@@ -1,6 +1,7 @@
 var GameState = require("./GameState");
 var BABYLON = require("babylonjs");
-var Arena = require("../Arena/Arena")
+var Arena = require("../Arena/Arena").Arena;
+var Player = require('../Player');
 
 class MainState extends GameState{
 
@@ -9,7 +10,8 @@ class MainState extends GameState{
         this.scene = this.createScene();
         this.debugUI = $("#debug"); 
         this.timer = 0;
-        this.arena = new Arena(this.scene);      
+        this.arena = new Arena(this.scene);
+         
     }
 
     // createScene function that creates and return the scene
@@ -43,13 +45,21 @@ class MainState extends GameState{
         this.player = sphere;
         shadowGenerator.getShadowMap().renderList.push(sphere);
 
+        this.player = new Player(scene);
+
+
+        // setInterval(()=>{
+        //     new Player(scene);
+            
+        // }, 100);
+
         var material = new BABYLON.StandardMaterial("texture1", scene);
         material.diffuseColor = new BABYLON.Color3(Math.random(),Math.random(),Math.random());   
-        //Bunch of other random spheres
+        // Bunch of other random spheres
         for(var i = 0; i < 10; i++){
             var sphere1 = BABYLON.Mesh.CreateSphere('sphere' +i , 8, 4, scene);
             sphere1.material = material;
-            sphere1.physicsImpostor = new BABYLON.PhysicsImpostor(sphere1, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 0.5, friction: 0.5,restitution: 0.9 }, scene);        
+            sphere1.physicsImpostor = new BABYLON.PhysicsImpostor(sphere1, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 0.5, friction: 0.9,restitution: 0.9 }, scene);        
             sphere1.physicsImpostor.physicsBody.angularDamping = 0.7;    
             sphere1.position.y = 2;
             sphere1.position.x = -50 + Math.random()*100;
@@ -78,12 +88,7 @@ class MainState extends GameState{
                 }
                 
             }           
-        }
-        // this.arena.material.diffuseTexture.uScale +=Math.sin(this.timer);
-        // this.arena.material.bumpTexture.uScale +=Math.sin(this.timer);
-        // this.arena.material.diffuseTexture.vScale +=Math.sin(this.timer);
-        // this.arena.material.bumpTexture.vScale +=Math.sin(this.timer);
-        // this.timer += 2*Math.PI/100;
+        }       
     }
     
     render(){

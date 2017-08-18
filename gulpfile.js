@@ -19,6 +19,7 @@ var babelify = require('babelify');
 var browserify = require('browserify');
 var browserSync = require('browser-sync');
 var nodemon = require('gulp-nodemon');
+var tsify = require('tsify');
 
 //The global shim allows us to ignore copying BabylonJS to the 
 //final browserified game file and just include it in the index.html
@@ -125,8 +126,9 @@ function build() {
         entries: ENTRY_FILE,
         debug: true,
         
-    })    
-    .transform(babelify, globalShim)
+    })  
+    .plugin(tsify, { target: 'es6' })     
+    .transform(babelify, globalShim, { extensions: [ '.tsx', '.ts' ] })
     .bundle().on('error', function(error){
           gutil.log(gutil.colors.red('[Build Error]', error.message));
           this.emit('end');
@@ -180,7 +182,7 @@ function serve() {
     browserSync(options);
     
     // Watches for changes in files inside the './src' folder.
-    gulp.watch(SOURCE_PATH + '/**/*.js', ['watch-js']);
+    gulp.watch(SOURCE_PATH + '/**/*', ['watch-js']);
     
     // Watches for changes in files inside the './static' folder. Also sets 'keepFiles' to true (see cleanBuild()).
     gulp.watch(STATIC_PATH + '/**/*', ['watch-static']).on('change', function() {
