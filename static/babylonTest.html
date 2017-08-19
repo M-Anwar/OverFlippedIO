@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+    <title>Babylon - Getting Started</title>
+    <!--- link to the last version of babylon -->
+    <script src="scripts/babylon.max.js"></script>
+    <script src="js/hand.min.js"></script>
+    <script src="js/cannon.min.js"></script> 
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>  
+    <style>
+        html, body {
+            overflow: hidden;
+            width   : 100%;
+            height  : 100%;
+            margin  : 0;
+            padding : 0;
+        }
+
+        #renderCanvas {
+            width   : 100%;
+            height  : 100%;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+    <div id ="game">
+        <p id="debug"> </p>
+    </div>
+
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas;
+        var debugUI = $("#debug"); 
+        function resizeCanvas(){
+            var new_size = getDesiredSize($(window).width(), $(window).height(), 16/9);
+            var width = new_size.width;
+            var height = new_size.height;  
+            canvas.style.width = width.toString() + "px";
+            canvas.style.height = height.toString() + "px";                 
+            //engine.resize();
+        }
+
+        function getDesiredSize(windowWidth, windowHeight, aspectRatio){
+            var newWidth = windowWidth;
+            var newHeight = (1/aspectRatio)*newWidth;
+
+            if(newHeight > windowHeight){
+                newHeight = windowHeight;
+                newWidth = aspectRatio * newHeight;
+            }
+
+            return {
+                width: newWidth,
+                height: newHeight
+            };         
+        }
+        // the canvas/window resize event handler
+        window.addEventListener('resize', function(){
+            resizeCanvas();       
+        });
+
+        window.addEventListener('DOMContentLoaded', function(){
+            // get the canvas DOM element
+            canvas = document.getElementById('renderCanvas');
+            var width = 1280;
+            var height =720;
+            canvas.style.width = width + "px";
+            canvas.style.height = height + "px";   
+
+            // load the 3D engine
+            var engine = new BABYLON.Engine(canvas, true);
+            engine.canvasWidth = width;
+            engine.canvasHeight = height;
+            resizeCanvas();
+
+            // createScene function that creates and return the scene
+            var createScene = function(){
+               // This creates a basic Babylon Scene object (non-mesh)
+                var scene = new BABYLON.Scene(this.engine);
+                scene.clearColor = new BABYLON.Color3(1,1.0,1.0);
+                scene.enablePhysics(new BABYLON.Vector3(0,-50, 0), new BABYLON.CannonJSPlugin());                     
+
+                var camera = new BABYLON.ArcRotateCamera('camera2', -Math.PI/2,Math.PI/6, 120, new BABYLON.Vector3(0, 0,-5), scene);
+                    
+                camera.attachControl(canvas, true);
+
+                var light = new BABYLON.DirectionalLight("sunLight", new BABYLON.Vector3(-0.5, -1.4, 0.2), scene);
+                light.position = new BABYLON.Vector3(0, 100,0);      
+                scene.sunLight = light;
+                
+                // Shadows
+                var shadowGenerator = new BABYLON.ShadowGenerator(2048, light);
+                
+            
+                // Player Sphere
+                var sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
+                sphere.material = new BABYLON.StandardMaterial("texture1", scene);
+                sphere.material.diffuseTexture = new BABYLON.Texture("img/grass.jpg");
+                
+                sphere.position.y = 1;
+                sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 2,friction:0.5, restitution: 0.9 }, scene);
+                sphere.physicsImpostor.physicsBody.angularDamping  = 0.7;
+                sphere.physicsImpostor.physicsBody.linearDamping = 0.9;
+                this.player = sphere;
+                shadowGenerator.getShadowMap().renderList.push(sphere);
+
+            
+
+                // setInterval(()=>{
+                //     new Player(scene);
+                    
+                // }, 100);
+
+                var material = new BABYLON.StandardMaterial("texture1", scene);
+                material.diffuseColor = new BABYLON.Color3(Math.random(),Math.random(),Math.random());   
+                // Bunch of other random spheres
+                for(var i = 0; i < 10; i++){
+                    var sphere1 = BABYLON.Mesh.CreateSphere('sphere' +i , 8, 4, scene);
+                    sphere1.material = material;
+                    sphere1.physicsImpostor = new BABYLON.PhysicsImpostor(sphere1, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 0.5, friction: 0.9,restitution: 0.9 }, scene);        
+                    sphere1.physicsImpostor.physicsBody.angularDamping = 0.7;    
+                    sphere1.position.y = 2;
+                    sphere1.position.x = -50 + Math.random()*100;
+                    sphere1.position.z = -50 + Math.random()*100;
+                    shadowGenerator.getShadowMap().renderList.push(sphere1);           
+                } 
+
+                let groundTexture = new BABYLON.Texture("img/grid.png", scene);        
+                let wallTexture = new BABYLON.Texture("img/grid2.png",scene);
+                let bumpTexture = new BABYLON.Texture("img/normal3.png", scene);  
+                groundTexture.uScale = 1.0; groundTexture.vScale = 1.0;
+                bumpTexture.uScale = 1.0; bumpTexture.vScale = 1.0;
+                
+                //Ground
+                let ground = BABYLON.Mesh.CreateBox("ground", 1, scene);
+                ground.scaling.x = 100;
+                ground.scaling.z = 100;
+                ground.scaling.y = 2;
+                ground.position.y = -1;
+                let groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+                groundMaterial.diffuseTexture = groundTexture;
+                groundMaterial.bumpTexture = bumpTexture;
+                ground.material = groundMaterial;           
+                ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, friction:0.5,restitution: 0.9 }, scene);     
+                ground.receiveShadows = true;  
+               
+                
+                return scene;
+               
+            }
+
+            // call the createScene function
+            var scene = createScene();
+
+            // run the render loop
+            engine.runRenderLoop(function(){
+                scene.render();                 
+                debugUI.text("FPS: " + engine.getFps());
+            });
+
+            // the canvas/window resize event handler
+            window.addEventListener('resize', function(){
+                engine.resize();
+            });
+        });
+    </script>
+</body>
+</html>

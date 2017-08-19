@@ -1,7 +1,7 @@
 var GameState = require("./GameState");
 var BABYLON = require("babylonjs");
 var Arena = require("../Arena/Arena").Arena;
-var Player = require('../Player');
+var Player = require('../Player').Player;
 
 class MainState extends GameState{
 
@@ -45,7 +45,7 @@ class MainState extends GameState{
         this.player = sphere;
         shadowGenerator.getShadowMap().renderList.push(sphere);
 
-        this.player = new Player(scene);
+        this.player2 = new Player(scene);
 
 
         // setInterval(()=>{
@@ -75,11 +75,10 @@ class MainState extends GameState{
         this.debugUI.text("FPS: " + this.engine.getFps());
         
         if(this.engine.playerManager.getPlayerCount()>0){
-            var control = this.engine.playerManager.getPlayer(0); 
-            this.debugUI.text(control.tilt_LR + ", " + control.tilt_FB + ", " + control.boosted);          
+            var control = this.engine.playerManager.getPlayer(0);         
+            
             if(control){
-                
-                
+                this.debugUI.text(control.tilt_LR + ", " + control.tilt_FB + ", " + control.boosted);                          
                 if(control.boosted){
                     this.player.physicsImpostor.applyImpulse(new BABYLON.Vector3(control.tilt_LR/45 * 25, 0, -control.tilt_FB/45 *25), this.player.getAbsolutePosition());
                     console.log("BOOSTING!");

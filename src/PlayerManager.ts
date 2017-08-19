@@ -1,24 +1,56 @@
-var logger = require("js-logger");
+import * as logger from 'js-logger';
+declare var io;
+
+/**
+ * The current state of the game given the player states.
+ */
+export enum GameState{
+    LOBBY, GAME, DISCONNECT 
+}
+
+/**
+ * Simple data structure holding all the information required for 
+ * representing a user connected to the game.
+ */
+export class User{
+    id: string
+    userName: string
+    tilt_LR: number
+    tilt_FB: number
+    boosted: boolean
+    userReady: boolean
+}
+
+class HistoryElement{
+    userName: string;
+    index: number;
+}
 
 /**
  * Player manager class which is responsible for handling all player connections
  * and data being sent by the controller server. This class handles players connecting
  * to the game, their controller inputs and any other events emanating from the server
  */
+export class PlayerManager{
+    public maxPlayers:number = 2;
+    
+    private socket: any
+    private currentGameState: GameState;
 
-class PlayerManager{
+    private players = Array<User>(this.maxPlayers);
+    private history = Array<HistoryElement>();
+    private userAddCallbacks = [];
+    private userDisconnectCallbacks = [];
+    private userUpdateCallbacks = [];
+    private controllerUpdateCallbacks = [];
+    private gameStateChangeCallbacks = [];
+
     constructor(){
         logger.debug("Connecting to server and joining room");
         this.socket = io.connect();
-        this.socket.emit('newRoom', {room:"game_test"});
-        this.maxPlayers = 1;
+        this.socket.emit('newRoom', {room:"game_test"});        
 
-        this.gameState = {
-            LOBBY: "Lobby",
-            GAME: "Game",
-            DISCONNECT: "Disconnect"
-        }
-        this.currentGameState = this.gameState.LOBBY;
+        this.currentGameState = GameState.LOBBY;
         
         var self = this;
         
@@ -38,51 +70,42 @@ class PlayerManager{
         this.socket.on("controllerUpdate", function(id, data){        
             //logger.debug("controllerUpdate: " + id + " " + JSON.stringify(data));
             self.controllerUpdate(id, data);
-        });
+        });          
         
-        //Data structures for managing players
-        this.players = Array(this.maxPlayers);
-        this.history = [];
-        this.userAddCallbacks = [];
-        this.userDisconnectCallbacks = [];
-        this.userUpdateCallbacks = [];
-        this.controllerUpdateCallbacks = [];
-        this.gameStateChangeCallbacks = [];
-
+        this.players.fill(null);
     }
-    registerUserAddCallback(cb){this.userAddCallbacks.push(cb);}
-    registerUserDisconnectCallback(cb){this.userDisconnectCallbacks.push(cb);}
-    registerUserUpdateCallback(cb){this.userUpdateCallbacks.push(cb);} 
-    registerGameStateChangeCallback(cb){this.gameStateChangeCallbacks.push(cb);}   
-    returnToLobby(){
-        history.splice(0,history.length);
-        this.currentGameState = this.gameState.LOBBY; 
+    public registerUserAddCallback(cb){this.userAddCallbacks.push(cb);}
+    public registerUserDisconnectCallback(cb){this.userDisconnectCallbacks.push(cb);}
+    public registerUserUpdateCallback(cb){this.userUpdateCallbacks.push(cb);} 
+    public registerGameStateChangeCallback(cb){this.gameStateChangeCallbacks.push(cb);}   
+    public returnToLobby(){
+        this.history.splice(0,history.length);
+        this.currentGameState = GameState.LOBBY; 
     }
 
-    addUser(id, data){
-        this._addNewPlayer({id: id, userName: data.userName, tilt_LR: 0, tilt_FB:0, boosted: false, userReady:false})           
+    private addUser(id, data){
+        this.addNewPlayer({id: id, userName: data.userName, tilt_LR: 0, tilt_FB:0, boosted: false, userReady:false})           
         for(let cb of this.userAddCallbacks){cb(id, data);}     
                    
     }
-    userDisconnect(id, data){
+    private userDisconnect(id, data){
         var playerIdx = this.getPlayerIndex(id);
-        if(this.currentGameState==this.gameState.GAME){
-            this.currentGameState=this.gameState.DISCONNECT;
+        if(this.currentGameState==GameState.GAME){
+            this.currentGameState=GameState.DISCONNECT;
             for(let cb of this.gameStateChangeCallbacks){cb(this.currentGameState);}
         }
 
         //Only add to history when we in the DISCONNECT state
-        if(this.currentGameState==this.gameState.DISCONNECT){ 
+        if(this.currentGameState==GameState.DISCONNECT){ 
             var name = this.players[playerIdx].userName;        
-            this._addToHistory(name, playerIdx);   
+            this.addToHistory(name, playerIdx);   
         }
        
         for(let cb of this.userDisconnectCallbacks){cb(id, data);}  
-        this.players[playerIdx] = null;
-        
+        this.players[playerIdx] = null;        
               
     }
-    userUpdate(id, data){        
+    private userUpdate(id, data){        
         var playerElement = this.getPlayerById(id);      
         playerElement.userReady = !playerElement.userReady;
         for(let cb of this.userUpdateCallbacks){cb(id, data);}  
@@ -95,72 +118,62 @@ class PlayerManager{
         }    
 
         if(count ==this.maxPlayers){
-            this.currentGameState = this.gameState.GAME;
+            this.currentGameState = GameState.GAME;
             for(let cb of this.gameStateChangeCallbacks){cb(this.currentGameState);}
         }
 
     }
-    controllerUpdate(id, data){        
+    private controllerUpdate(id, data){        
         var playerElement = this.getPlayerById(id);
         playerElement.tilt_LR = data.tilt_LR;
         playerElement.tilt_FB = data.tilt_FB;
         playerElement.boosted = data.boosted;        
     }
 
-    /**
-     * Get the player corresponding to the actual game index.
-     * @param {*Integer} index the player to get 
-     */
-    getPlayer(index){
-        var count =-1;
-        for (var i in this.players){
-            if(this.players[i]!=null){
-                count++;
-            }
-            if(count == index){
-                return this.players[i];
-            }
-        }
-        logger.error("Invalid user requested from getPlayer(index)");
-        return null;  
+   /**
+    * Get the player corresponding to the actual game index.
+    * @param index the index of the player to retrieve
+    */
+    public getPlayer(index: number): User{
+        return this.players[index];       
     }
-    getPlayerIndex(id){
-        for (var i in this.players){
-            if(this.players[i]!=null){
-                if(this.players[i].id == id){
-                    return i;
-                }
+    public getPlayerIndex(id:string):number{                
+        for(let [index, player] of this.players.entries()){            
+            if(player!=null && player.id == id){                               
+                return index;
             }
-        }
+        }                    
         logger.error("Invalid user requested from getPlayerIndex(id)");
-        return null;   
+        return null;          
     }
-    getPlayerById(id){
-        for (var i in this.players){
-            if(this.players[i]!=null){
-                if(this.players[i].id == id){
-                    return this.players[i];
-                }
+    public getPlayerById(id:string):User {
+        for(let player of this.players){            
+            if(player!=null && player.id == id){
+                return player;
             }
-        }
+        }       
+        
         logger.error("Invalid user requested from getPlayer(id)");
         return null;        
     }
-    getAllPlayers(){
+    public getAllPlayers():Array<User>{
         return this.players;
     }    
-    getPlayerCount(){
+    public getPlayerCount():number{
         var count =0;
-        for(var i in this.players){
-            if(this.players[i]!=null){
+
+        for(let player of this.players){
+            if(player!=null){
                 count++;
             }
-        }
+        }        
         return count;
     }
 
 
-    _addToHistory(player, idx){
+    private addToHistory(player:string, idx:number): void{
+        
+        //Update the history index if the player already exists
         for(var hist in this.history){
             if(this.history[hist].userName == player){
                 this.history[hist].index = idx;
@@ -168,15 +181,16 @@ class PlayerManager{
             }
         }
         
+        //Else push a new history entry
         this.history.push({userName: player, index: idx});
 
     }
-    _addNewPlayer(player){
-        if(this.getPlayerCount() == this.maxPlayers) return;
+    private addNewPlayer(player: User): void{        
+        if(this.getPlayerCount() == this.maxPlayers) {return;}
         
-        for(var hist in this.history){
+        for(let hist in this.history){
             var cur = this.history[hist];
-
+            
             if(cur.userName == player.userName){ //If the player joined before
                 if(this.players[cur.index] !=null){ //But there is someone already there 
                     var temp = this.players[cur.index]; //Swap the existing player to an empty location
@@ -196,20 +210,18 @@ class PlayerManager{
             }
         }
     
-        this._addToEmptySlot(player);
+        this.addToEmptySlot(player);
         
     }
 
-    _addToEmptySlot(data){
+    private addToEmptySlot(data:User): void{      
         for(var i = 0;i < this.players.length; i++){
             if(this.players[i] == null){
                 this.players[i] = data;
-                break;
+                return;
             }
-        }
+        }        
     }
     
    
 }
-
-module.exports = PlayerManager;

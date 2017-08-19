@@ -21,7 +21,7 @@ export class Arena{
     
     private createArena(scene){
          //Textures        
-        let groundTexture = new BABYLON.Texture("img/grid.png", scene);
+        let groundTexture = new BABYLON.Texture("img/grid.png", scene);        
         let wallTexture = new BABYLON.Texture("img/grid2.png",scene);
         let bumpTexture = new BABYLON.Texture("img/normal3.png", scene);  
         groundTexture.uScale = 1.0; groundTexture.vScale = 1.0;

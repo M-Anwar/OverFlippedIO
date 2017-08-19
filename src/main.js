@@ -1,5 +1,5 @@
 var logger = require("js-logger");
-var PlayerManager = require("./PlayerManager");
+var PlayerManager = require("./PlayerManager").PlayerManager;
 var BABYLON = require("babylonjs");
 var LobbyState = require('./GameStates/LobbyState');
 var MainState = require('./GameStates/MainState');
@@ -12,7 +12,7 @@ var engine, canvas;
 var states ={};
 var uiManager;
 
-var debugMode = true;
+var debugMode = false;
 
 //Entry point 
 $(function(){

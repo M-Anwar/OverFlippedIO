@@ -1,0 +1,14 @@
+/**
+We use these options in the tsconfig.json file to allow our mocha tests to be written
+in Javascript but still allow for typscript files to be tested. 
+
+Whether this is a good idea, remains to be seen. It is more of a hack, but it
+seems to work for our purposes. Ideally we should be using TSC for our 
+unit tests as well. - Muhammed Anwar
+**/
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "target": "es6"
+    }
+}

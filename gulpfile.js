@@ -127,7 +127,7 @@ function build() {
         debug: true,
         
     })  
-    .plugin(tsify, { target: 'es6' })     
+    .plugin(tsify, { target: 'es6', allowJs: true })     
     .transform(babelify, globalShim, { extensions: [ '.tsx', '.ts' ] })
     .bundle().on('error', function(error){
           gutil.log(gutil.colors.red('[Build Error]', error.message));

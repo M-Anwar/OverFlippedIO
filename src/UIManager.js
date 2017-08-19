@@ -4,6 +4,7 @@
 
 var BABYLON = require("babylonjs");
 
+var GameState = require("./PlayerManager").GameState
 
 class UIManager{
 
@@ -74,7 +75,7 @@ class UIManager{
         playerManager.registerGameStateChangeCallback(function(gameState){
             console.log("Player Disconnected");
             clearInterval(startInterval);
-            if(gameState == playerManager.gameState.GAME){
+            if(gameState == GameState.GAME){
                 var count = 5;
                 startInterval = setInterval(function(){
                     count --;
@@ -90,14 +91,14 @@ class UIManager{
                     }
                 },1000);
             }
-            else if(gameState == playerManager.gameState.DISCONNECT){
+            else if(gameState == GameState.DISCONNECT){
                 
                 self.lobbyUI.gameStatus.text("DISCONNECTED");
                 self.lobbyUI.container.show();               
                 self.lobbyUI.container.animateCss("bounceIn");
                 
             }
-            else if(gameState == playerManager.gameState.LOBBY){
+            else if(gameState == GameState.LOBBY){
                 self.lobbyUI.gameStatus.text("WAITING FOR PLAYERS");
             }
         })        
